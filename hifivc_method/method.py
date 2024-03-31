@@ -1,86 +1,87 @@
 import torch
 import os
-import librosa
-from audio_utils import merge_audio, preprocess_audio, mel_spectrogram, smooth_pitch, fade_pieces
-from f0_utils import get_lf0_from_wav
+from .audio_utils import merge_audio, preprocess_audio, mel_spectrogram, smooth_pitch, fade_pieces, AudioFeaturesParams, SAMPLE_RATE
+from .f0_utils import get_lf0_from_wav
 import numpy as np
+import soundfile as sf
 
+
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 device = 'cuda'
-SAMPLE_RATE = 22050
+params = AudioFeaturesParams()
+
+
+def get_files(path: str):
+    return sorted([f'{path}/{file}' for file in os.listdir(path)])
 
 
 def smooth_audio(audio, *samples):
-    for ind, sample in enumerate(samples):
-        if 0 < ind < len(samples) - 1:
-            fade_duration = min(len(audio[samples[ind - 1]:sample]), len(audio[sample:samples[ind + 1]])) // 2
-        elif ind == 0 and len(samples) > 1:
-            fade_duration = min(len(audio[:sample]), len(audio[sample:samples[ind + 1]])) // 2
-        elif ind == len(samples) - 1 and len(samples) > 1:
-            fade_duration = min(len(audio[samples[ind - 1]:sample]), len(audio[sample:])) // 2
+    for sample in samples:
+        fade_duration = int(0.12 * SAMPLE_RATE)
         duration = fade_duration // 2
-        fade_pieces(audio[:sample], audio[sample:], duration, duration, 1, 0.1, 1)
+        fade_pieces(audio[:sample], audio[sample:], duration, duration, 1, 0.054, 1)
     return audio
 
 
-def save_audio(audio: np.array, path: str) -> None:
-    librosa.output.write_wav(f'{path}/result.wav', audio, SAMPLE_RATE)
+def save_audio(audio: np.array, path: str, sr=22050) -> None:
+    sf.write(f'{path}/result.wav', audio, sr)
 
 
 def fade_method(audios_path: str, save_path: str):
-    merged, splices = merge_audio(*os.listdir(audios_path))
+    merged, splices = merge_audio(*get_files(audios_path))
     smoothed = smooth_audio(merged, *splices)
 
-    save_audio(smoothed, save_path)
+    save_audio(smoothed, save_path, sr=SAMPLE_RATE)
 
 
 def convert_method(audios_path: str, save_path: str, model_jit_path: str):
-    merged, _ = merge_audio(*os.listdir(audios_path))
+    merged, _ = merge_audio(*get_files(audios_path))
 
-    save_audio(merged, 'tmp.wav')
+    sf.write(f'tmp.wav', merged, SAMPLE_RATE)
 
     wav_source = preprocess_audio(merged).to(device)
 
     wav_ref = preprocess_audio(merged)
-    mel_ref = mel_spectrogram(wav_ref).to(device)
-    pitch = get_lf0_from_wav('tmp.wav')
+    mel_ref = mel_spectrogram(wav_ref, params).to(device)
+    pitch = get_lf0_from_wav('tmp.wav').to(device).float()
     
     with torch.no_grad():
         traced = torch.jit.load(model_jit_path).eval()
         converted = traced(wav_source, mel_ref, pitch)
     
-    save_audio(converted, save_path)
+    save_audio(converted.cpu().squeeze().detach().numpy(), save_path)
 
 
 def fade_convert_method(audios_path: str, save_path: str, model_jit_path: str):
-    merged, splices = merge_audio(*os.listdir(audios_path))
+    merged, splices = merge_audio(*get_files(audios_path))
     smoothed = smooth_audio(merged, *splices)
 
-    save_audio(smoothed, 'tmp.wav')
+    sf.write(f'tmp.wav', merged, SAMPLE_RATE)
 
     wav_source = preprocess_audio(merged).to(device)
 
     wav_ref = preprocess_audio(merged)
-    mel_ref = mel_spectrogram(wav_ref).to(device)
-    pitch = get_lf0_from_wav('tmp.wav')
+    mel_ref = mel_spectrogram(wav_ref, params).to(device)
+    pitch = get_lf0_from_wav('tmp.wav').to(device).float()
     
     with torch.no_grad():
         traced = torch.jit.load(model_jit_path).eval()
         converted = traced(wav_source, mel_ref, pitch)
     
-    save_audio(converted, save_path)
+    save_audio(converted.cpu().squeeze().detach().numpy(), save_path)
 
 
 def smooth_pitch_convert_method(audios_path: str, save_path: str, model_jit_path: str):
-    merged, splices = merge_audio(*os.listdir(audios_path))
+    merged, splices = merge_audio(*get_files(audios_path))
     
-    save_audio(merged, 'tmp.wav')
+    sf.write(f'tmp.wav', merged, SAMPLE_RATE)
 
     wav_source = preprocess_audio(merged).to(device)
 
     wav_ref = preprocess_audio(merged)
-    mel_ref = mel_spectrogram(wav_ref).to(device)
-    pitch = get_lf0_from_wav('tmp.wav')
+    mel_ref = mel_spectrogram(wav_ref, params).to(device)
+    pitch = get_lf0_from_wav('tmp.wav').to(device).float()
     
     smooth_pitch(merged, pitch, *splices)
     
@@ -88,4 +89,4 @@ def smooth_pitch_convert_method(audios_path: str, save_path: str, model_jit_path
         traced = torch.jit.load(model_jit_path).eval()
         converted = traced(wav_source, mel_ref, pitch)
     
-    save_audio(converted, save_path)
+    save_audio(converted.cpu().squeeze().detach().numpy(), save_path)

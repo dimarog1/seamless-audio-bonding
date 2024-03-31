@@ -5,12 +5,13 @@ import numpy as np
 import parselmouth
 import torch
 from scipy.interpolate import interp1d
+from .audio_utils import SAMPLE_RATE
 
 
 def compute_f0_from_wav(
     wav_path: str,
 ) -> np.ndarray:
-    sampling_rate = 16000
+    sampling_rate = SAMPLE_RATE
     snd = parselmouth.Sound(wav_path).resample(sampling_rate)
     x = snd.as_array()
     length = x.shape[-1]

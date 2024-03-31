@@ -1,11 +1,14 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Tuple, List
 
 import librosa
 import torch
 from librosa.filters import mel as librosa_mel_fn
 
 import numpy as np
+
+
+SAMPLE_RATE = 16000
 
 mel_basis = {}
 hann_window = {}
@@ -111,7 +114,7 @@ def fade_pieces(piece_1: np.array,
                 fade_in_end: int,
                 fade_start_value: float,
                 center_fade: float,
-                fade_end_value: float) -> tuple[np.ndarray, np.ndarray]:
+                fade_end_value: float) -> Tuple[np.ndarray, np.ndarray]:
     fade_out = np.linspace(fade_start_value, center_fade, fade_out_start)
     piece_1[len(piece_1) - fade_out_start:] *= fade_out
 
@@ -125,7 +128,7 @@ def smooth_transition(start_smooth: int,
                       end_smooth: int,
                       smooth_start_value: float,
                       center_smooth: float,
-                      smooth_end_value: float) -> tuple[np.ndarray, np.ndarray]:
+                      smooth_end_value: float) -> Tuple[np.ndarray, np.ndarray]:
     smooth_out = np.linspace(smooth_start_value, center_smooth, start_smooth)
     smooth_in = np.linspace(center_smooth, smooth_end_value, end_smooth)
 
@@ -158,16 +161,16 @@ def smooth_pitch(audio, pitch, *samples: int):
         pitch[0, 0, (start + end) // 2 + (end - start) % 2:end] = torch.FloatTensor(smooth_2)
 
 
-def merge_audio(*files: str) -> tuple[np.array, list[int]]:
+def merge_audio(*files: str) -> Tuple[np.array, List[int]]:
     audios = []
     splices = []
     cum = 0
     for i, audio_path in enumerate(files):
-        audio, _ = librosa.load(audio_path)
+        audio, sr = librosa.load(audio_path, sr=SAMPLE_RATE)
         cum += len(audio)
         audios.append(audio)
         if i < len(files) - 1:
             splices.append(cum)
 
-    res = np.concatenate([audio for audio in audios])
+    res = np.concatenate(audios)
     return res, splices
