@@ -1,5 +1,6 @@
 import argparse
-from hifivc_method.method import fade_method, convert_method, fade_convert_method, smooth_pitch_convert_method
+from methods.hifivc_method import fade_method, convert_method, fade_convert_method, smooth_pitch_convert_method
+from methods.fade_methods import linear_word, linear_time, exp_word, exp_time
 
 
 def main():
@@ -20,6 +21,14 @@ def main():
         fade_convert_method(a.audios_path, a.save_path, a.model_path)
     elif a.method == 'smooth_pitch':
         smooth_pitch_convert_method(a.audios_path, a.save_path, a.model_path)
+    elif a.method == 'linear_word':
+        linear_word(a.audios_path, a.save_path)
+    elif a.method == 'linear_time':
+        linear_time(a.audios_path, a.save_path)
+    elif a.method == 'exp_word':
+        exp_word(a.audios_path, a.save_path)
+    elif a.method == 'exp_time':
+        exp_time(a.audios_path, a.save_path)
 
 
 if __name__ == '__main__':

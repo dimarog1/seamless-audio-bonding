@@ -1,2 +1,4 @@
 .venv
 *.pt
+*.wav
+__pycache__

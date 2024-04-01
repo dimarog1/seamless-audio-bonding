@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import os
 from typing import Optional, Tuple, List
 
 import librosa
@@ -6,6 +7,7 @@ import torch
 from librosa.filters import mel as librosa_mel_fn
 
 import numpy as np
+import soundfile as sf
 
 
 SAMPLE_RATE = 16000
@@ -108,17 +110,18 @@ def mel_spectrogram(
     return spec
 
 
-def fade_pieces(piece_1: np.array,
-                piece_2: np.array,
-                fade_out_start: int,
-                fade_in_end: int,
-                fade_start_value: float,
-                center_fade: float,
-                fade_end_value: float) -> Tuple[np.ndarray, np.ndarray]:
-    fade_out = np.linspace(fade_start_value, center_fade, fade_out_start)
+def fade(piece_1: np.array,
+         piece_2: np.array,
+         fade_out_start: int,
+         fade_in_end: int,
+         fade_start_value: float,
+         center_fade: float,
+         fade_end_value: float,
+         exp=1) -> Tuple[np.ndarray, np.ndarray]:
+    fade_out = np.linspace(fade_start_value, center_fade, fade_out_start) ** exp
     piece_1[len(piece_1) - fade_out_start:] *= fade_out
 
-    fade_in = np.linspace(center_fade, fade_end_value, fade_in_end)
+    fade_in = np.linspace(center_fade, fade_end_value, fade_in_end) ** exp
     piece_2[:fade_in_end] *= fade_in
 
     return piece_1, piece_2
@@ -165,12 +168,22 @@ def merge_audio(*files: str) -> Tuple[np.array, List[int]]:
     audios = []
     splices = []
     cum = 0
+    sample_rate = 22050
     for i, audio_path in enumerate(files):
         audio, sr = librosa.load(audio_path, sr=SAMPLE_RATE)
+        sample_rate = sr
         cum += len(audio)
         audios.append(audio)
         if i < len(files) - 1:
             splices.append(cum)
 
     res = np.concatenate(audios)
-    return res, splices
+    return res, splices, sample_rate
+
+
+def get_files(path: str):
+    return sorted([f'{path}/{file}' for file in os.listdir(path)])
+
+
+def save_audio(audio: np.array, path: str, sr=22050) -> None:
+    sf.write(f'{path}/result.wav', audio, sr)
