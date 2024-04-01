@@ -2,3 +2,5 @@
 *.pt
 *.wav
 __pycache__
+vosk_data
+.idea/

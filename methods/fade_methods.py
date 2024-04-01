@@ -1,7 +1,6 @@
 import numpy as np
 from .utils.audio_utils import fade, merge_audio, get_files, save_audio
 
-
 # TODO VOSK - сделать функцию, которая будет давать координаты ближайших справа и слева слов от места склейки в аудио.
 # Линейный фэйд с оптимальной длиной минимального ближайшего слова
 def linear_word(audios_path: str, save_path: str, center_fade=0.054, fade_len=3.542):
