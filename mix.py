@@ -10,9 +10,9 @@ def main():
     parser.add_argument('--audios_path', default='audios', type=str)
     parser.add_argument('--save_path', default='smoothed_audio', type=str)
     parser.add_argument('--model_path', default='model.pt', type=str)
-    
+
     a = parser.parse_args()
-    
+
     if a.method == 'fade':
         fade_method(a.audios_path, a.save_path)
     elif a.method == 'convert':
