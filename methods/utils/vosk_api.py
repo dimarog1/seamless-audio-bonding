@@ -5,8 +5,6 @@ import librosa
 import soundfile
 from vosk import KaldiRecognizer, Model
 
-MODEL_PATH = 'vosk_data/model/vosk-model-en-us-0.22-lgraph'  # путь к модели vosk
-
 
 class RecognizerWrapper:
     chunk_size = 4000

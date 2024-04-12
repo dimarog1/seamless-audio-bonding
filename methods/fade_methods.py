@@ -3,10 +3,10 @@ from .utils.audio_utils import fade, merge_audio, get_files, save_audio
 from .utils.vosk_utils import get_neighbors
 
 # Линейный фэйд с оптимальной длиной минимального ближайшего слова
-def linear_word(audios_path: str, save_path: str, center_fade=0.054, fade_len=3.542):
+def linear_word(audios_path: str, save_path: str, vosk_model: str, center_fade=0.054, fade_len=3.542):
     audio, splices, sr = merge_audio(*get_files(audios_path))
 
-    neighbors = get_neighbors(audio, splices)
+    neighbors = get_neighbors(audio, splices, vosk_model)
     
     for ind, sample in enumerate(splices):
         if neighbors[ind] == (None, None):
@@ -32,10 +32,10 @@ def linear_time(audios_path: str, save_path: str, center_fade=0.033, fade_durati
 
 
 # Экспоненциальный фэйд с оптимальной длиной минимального ближайшего слова и силой фейда
-def exp_word(audios_path: str, save_path: str, center_fade=0.01, fade_len=3.93, fade_power=1.09):
+def exp_word(audios_path: str, save_path: str, vosk_model: str, center_fade=0.01, fade_len=3.93, fade_power=1.09):
     audio, splices, sr = merge_audio(*get_files(audios_path))
 
-    neighbors = get_neighbors(audio, splices)
+    neighbors = get_neighbors(audio, splices, vosk_model)
     
     for ind, sample in enumerate(splices):
         if neighbors[ind] == (None, None):

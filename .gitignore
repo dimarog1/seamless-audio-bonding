@@ -5,3 +5,5 @@ __pycache__
 vosk_data
 .idea/
 vosk_data
+cp_hifigan
+test.py
