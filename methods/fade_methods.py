@@ -24,6 +24,7 @@ def linear_word(audios_path: str, save_path: str, center_fade=0.054, fade_len=3.
 # Линейный фэйд с оптимальной длиной в секундах
 def linear_time(audios_path: str, save_path: str, center_fade=0.033, fade_duration=0.12):
     audio, splices, sr = merge_audio(*get_files(audios_path))
+    print(splices)
 
     duration = int((fade_duration * sr) // 2)
     for sample in splices:

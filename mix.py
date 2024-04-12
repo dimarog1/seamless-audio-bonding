@@ -6,10 +6,10 @@ from methods.fade_methods import linear_word, linear_time, exp_word, exp_time
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--method', default='fade', type=str)
+    parser.add_argument('--method', default='linear_time_fade', type=str)
     parser.add_argument('--audios_path', default='audios', type=str)
     parser.add_argument('--save_path', default='smoothed_audio', type=str)
-    parser.add_argument('--model_path', default='model.pt', type=str)
+    parser.add_argument('--hifivc_model_path', default='model.pt', type=str)
     
     a = parser.parse_args()
     
