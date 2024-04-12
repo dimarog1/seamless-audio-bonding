@@ -2,6 +2,8 @@ import argparse
 from methods.hifivc_method import convert_method, fade_convert_method, smooth_pitch_convert_method
 from methods.fade_methods import linear_word, linear_time, exp_word, exp_time
 
+import os.path
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -10,15 +12,21 @@ def main():
     parser.add_argument('--audios_path', default='audios', type=str)
     parser.add_argument('--save_path', default='smoothed_audio', type=str)
     parser.add_argument('--hifivc_model_path', default='model.pt', type=str)
+    parser.add_argument('--vosk_model_path', default='vosk_data', type=str)
     
     a = parser.parse_args()
     
+    if not os.path.isdir(a.audios_path):
+        raise FileNotFoundError('Incorrect input audio files')
+    if not os.path.isdir(a.save_path):
+        raise FileNotFoundError('Incorrect output path')
+    
     if a.method == 'convert':
-        convert_method(a.audios_path, a.save_path, a.model_path)
+        convert_method(a.audios_path, a.save_path, a.hifivc_model_path)
     elif a.method == 'fade_convert':
-        fade_convert_method(a.audios_path, a.save_path, a.model_path)
+        fade_convert_method(a.audios_path, a.save_path, a.hifivc_model_path)
     elif a.method == 'smooth_pitch':
-        smooth_pitch_convert_method(a.audios_path, a.save_path, a.model_path)
+        smooth_pitch_convert_method(a.audios_path, a.save_path, a.hifivc_model_path)
     elif a.method == 'linear_word_fade':
         linear_word(a.audios_path, a.save_path)
     elif a.method == 'linear_time_fade':
@@ -30,4 +38,10 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+        print('Done')
+    except FileNotFoundError as error:
+        print(error)
+    except Exception as error:
+        print(error)

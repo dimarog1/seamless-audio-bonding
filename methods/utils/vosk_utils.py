@@ -13,8 +13,9 @@ def determine_words(audio_path: str, sr: int = SAMPLE_RATE):
     return zipped_recognition
 
 
-def get_neighbors(source_path: str, splice_samples: List[int]):
+def get_neighbors(data, splice_samples: List[int], source_path='tmp.wav'):
     global SAMPLE_RATE
+    soundfile.write(source_path, data, SAMPLE_RATE)
     data, sr = librosa.load(source_path)
     SAMPLE_RATE = sr
     ascending_recognition = determine_words(source_path)

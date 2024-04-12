@@ -38,9 +38,12 @@ def convert_method(audios_path: str, save_path: str, model_jit_path: str):
     mel_ref = mel_spectrogram(wav_ref, params).to(device)
     pitch = get_lf0_from_wav('tmp.wav').to(device).float()
     
-    with torch.no_grad():
-        traced = torch.jit.load(model_jit_path).eval()
-        converted = traced(wav_source, mel_ref, pitch)
+    try:
+        with torch.no_grad():
+            traced = torch.jit.load(model_jit_path).eval()
+            converted = traced(wav_source, mel_ref, pitch)
+    except Exception:
+        raise RuntimeError('Incorrect hifi-vc model path')
     
     save_audio(converted.cpu().squeeze().detach().numpy(), save_path)
 

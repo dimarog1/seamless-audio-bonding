@@ -1,20 +1,19 @@
 import numpy as np
 from .utils.audio_utils import fade, merge_audio, get_files, save_audio
+from .utils.vosk_utils import get_neighbors
 
-# TODO VOSK - сделать функцию, которая будет давать координаты ближайших справа и слева слов от места склейки в аудио.
 # Линейный фэйд с оптимальной длиной минимального ближайшего слова
 def linear_word(audios_path: str, save_path: str, center_fade=0.054, fade_len=3.542):
     audio, splices, sr = merge_audio(*get_files(audios_path))
+
+    neighbors = get_neighbors(audio, splices)
     
     for ind, sample in enumerate(splices):
-        if 0 < ind < len(splices) - 1:
-            fade_duration = int(
-                min(len(audio[splices[ind - 1]:sample]), len(audio[sample:splices[ind + 1]])) / fade_len)
-        elif ind == 0 and len(splices) > 1:
-            fade_duration = int(min(len(audio[:sample]), len(audio[sample:splices[ind + 1]])) / fade_len)
-        elif ind == len(splices) - 1 and len(splices) > 1:
-            fade_duration = int(min(len(audio[splices[ind - 1]:sample]), len(audio[sample:])) / fade_len)
-        duration = int(fade_duration // 2)
+        if neighbors[ind] == (None, None):
+            continue
+        
+        fade_duration = int(min(sample - neighbors[ind][0], neighbors[ind][1] - sample))
+        duration = int(fade_duration // fade_len)
         fade(audio[:sample], audio[sample:], duration, duration, 1.0, center_fade, 1.0)
     
     save_audio(audio, save_path, sr)
@@ -32,20 +31,18 @@ def linear_time(audios_path: str, save_path: str, center_fade=0.033, fade_durati
     save_audio(audio, save_path, sr)
 
 
-# TODO VOSK - сделать функцию, которая будет давать координаты ближайших справа и слева слов от места склейки в аудио.
 # Экспоненциальный фэйд с оптимальной длиной минимального ближайшего слова и силой фейда
 def exp_word(audios_path: str, save_path: str, center_fade=0.01, fade_len=3.93, fade_power=1.09):
     audio, splices, sr = merge_audio(*get_files(audios_path))
 
+    neighbors = get_neighbors(audio, splices)
+    
     for ind, sample in enumerate(splices):
-        if 0 < ind < len(splices) - 1:
-            fade_duration = int(
-                min(len(audio[splices[ind - 1]:sample]), len(audio[sample:splices[ind + 1]])) / fade_len)
-        elif ind == 0 and len(splices) > 1:
-            fade_duration = int(min(len(audio[:sample]), len(audio[sample:splices[ind + 1]])) / fade_len)
-        elif ind == len(splices) - 1 and len(splices) > 1:
-            fade_duration = int(min(len(audio[splices[ind - 1]:sample]), len(audio[sample:])) / fade_len)
-        duration = int(fade_duration // 2)
+        if neighbors[ind] == (None, None):
+            continue
+
+        fade_duration = int(min(sample - neighbors[ind][0], neighbors[ind][1] - sample))
+        duration = int(fade_duration // fade_len)
         fade(audio[:sample], audio[sample:], duration, duration, 1.0, center_fade, 1.0, exp=fade_power)
     
     save_audio(audio, save_path, sr)
