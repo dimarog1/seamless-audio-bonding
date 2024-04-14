@@ -9,7 +9,7 @@ import os.path
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--method', default='linear_time_fade', type=str)
+    parser.add_argument('--method', default='exp_time_fade', type=str)
     parser.add_argument('--audios_path', default='audios', type=str)
     parser.add_argument('--save_path', default='smoothed_audio', type=str)
     parser.add_argument('--hifivc_model_path', default='model.pt', type=str)
