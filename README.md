@@ -10,7 +10,7 @@
 
 ## Установка
 
-> Компьютер должен обязательно поддерживать технологию cuda!
+> Видеокарта должна обязательно поддерживать архитектуру **CUDA**!
 
 ### Установка приложения
 
@@ -18,43 +18,52 @@
 
 Или же установить с помощью git:
 
-``` shell
+```shell
 git clone https://github.com/dimarog1/seamless-audio-bonding.git
 ```
 
 ### Установка зависимостей (Wheel)
 
-Предварительные условия:
+Обязательные условия:
 
-* Python >= 3.10
+* Python 3.10
 
 Для установки зависимостей пользуйтесь файлом [requirements.txt](./requirements.txt):
 
-``` shell
+```shell
 pip install -r ./requirements.txt
 ```
 
 Для установки pytorch отдельно воспользуйтесь методами установки с [официального сайта](https://pytorch.org/get-started/previous-versions/):
 
-``` shell
+```shell
 pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu117
 ```
 
-Послу установки PyTorch может слететь версия librosa, она должна быть версии **0.9.1**:
+После установки всех зависимостей может слететь версия librosa, она должна быть версии **0.9.1**:
 
-``` shell
+```shell
 pip install librosa==0.9.1
 ```
 
 ### Установка моделей
 
-Модель [Vosk](https://alphacephei.com/vosk/models), в нашем приложении используется модель [vosk-model-en-us-0.22-lgraph](https://alphacephei.com/vosk/models/vosk-model-en-us-0.22-lgraph.zip).
+В нашем приложении используется [vosk-model-en-us-0.22-lgraph](https://alphacephei.com/vosk/models/vosk-model-en-us-0.22-lgraph.zip), однако использовать можно любую с официального сайта [VOSK-API](https://alphacephei.com/vosk/models);
 
-Модель [HIFI-VC](https://drive.google.com/file/d/1oFwMeuQtwaBEyOFkyG7c7LfBQiRe3RdW/view).
+Модель [HIFI-VC](https://drive.google.com/file/d/1oFwMeuQtwaBEyOFkyG7c7LfBQiRe3RdW/view);
 
-Модель [HIFI-GAN](https://disk.yandex.ru/d/PWkFYPZL5pGBKA), для склейки аудио хватит только генератора (g_...), для обучения потребуются все файлы.
+Модель [HIFI-GAN](https://disk.yandex.ru/d/PWkFYPZL5pGBKA), для склейки аудио хватит только генератора (файл с названием g_...), для обучения потребуются все файлы. Желательно, чтобы генератор и дискриминатор (файл с названием do_...) находились в директории с чекпоинтами модели (например, cp_hifigan).
 
-## Пользование приложением
+### Установка VOSK-API
+
+Все необходимые зависимости уже находятся в [requirements.txt](./requirements.txt).
+
+Путь к директории VOSK присваивается переменной VOSK_DATA в скрипте [vosk_api.py](./methods/utils/vosk_api.py). Для корректной работы необходимо, чтобы директория VOSK_DATA содержала 2 папки: model и tmp. 
+
+* model должна содержать сам файл с моделью (по умолчанию ожидается vosk-model-en-us-0.22-lgraph). При желании изменить целевую модель, необходимо вручную изменить переменную MODEL в скрипте [vosk_api.py](./methods/utils/vosk_api.py));
+* tmp должна содержать временный аудиофайл tmp.wav (он может быть пустым).
+
+## Использование приложения
 
 ### Склейка аудио
 
@@ -77,41 +86,39 @@ pip install librosa==0.9.1
 
 Пример:
 
-``` shell
+```shell
 python mix.py --method exp_time_fade --audios_path audios --save_path smoothed_audio --hifivc_model_path model.pt --vosk_model_path vosk_data --hifigan_model_path cp_hifigan/g_02700000
 ```
 
-Также некоторые параметры установлены по умолчанию, это можно посмотреть в самом [скрипте](./mix.py).
-
-# **TODO: описать, как устанавливать vosk**
+Некоторые параметры установлены по умолчанию, ознакомиться можно в самом [скрипте](./mix.py).
 
 ### Обучение модели
 
 Для обучения модели на основе технологии [HIFI-GAN](https://github.com/jik876/hifi-gan.git) используется скрипт [train.py](./train.py), для него предусмотрены следующие флаги:
 
-* --input_wavs_dir - директория с оригинальными (исходными) аудиофайлами.
-* --input_mels_dir - директория с mel-спектрограммами для обучения с параметром fine-tuning.
-* --input_training_file - текстовый файл, где на каждой строке написан файл, который будет использоваться для обучения модели, пишется без расширения.
-* --input_validation_file - текстовый файл, где на каждой строке написан файл, который будет использоваться для валидации модели, пишется без расширения.
-* --checkpoint_path - директория, куда будут сохраняться логи и чекпоинты при обучени модели.
-* --config - путь до конфигурационного файла.
-* --training_epochs - количество эпох обучения.
-* --stdout_interval - интервал (шагов) вывода небольшого отчёта о процессе обучения модели.
-* --checkpoint_interval - интервал создания чекпоинта модели.
-* --summary_interval - интервал логирования процесса обучения модели.
-* --validation_interval - интервал валидации модели.
-* --fine_tuning - настройка, которой устанавливается значение True, когда для обучения используются собственные mel-спектрограммы.
+* --input_wavs_dir - директория с оригинальными (исходными) аудиофайлами;
+* --input_mels_dir - директория с mel-спектрограммами для обучения с параметром fine-tuning;
+* --input_training_file - текстовый файл, где на каждой строке написан файл, который будет использоваться для обучения модели, пишется без расширения;
+* --input_validation_file - текстовый файл, где на каждой строке написан файл, который будет использоваться для валидации модели, пишется без расширения;
+* --checkpoint_path - директория, куда будут сохраняться логи и чекпоинты при обучени модели;
+* --config - путь до конфигурационного файла;
+* --training_epochs - количество эпох обучения;
+* --stdout_interval - интервал (шагов) вывода небольшого отчёта о процессе обучения модели;
+* --checkpoint_interval - интервал создания чекпоинта модели;
+* --summary_interval - интервал логирования процесса обучения модели;
+* --validation_interval - интервал валидации модели;
+* --fine_tuning - настройка, которой устанавливается значение True, когда для обучения используются собственные mel-спектрограммы;
 * --training_data_percent - процент, который используется для обучения модели, 100 - training_data_percent процентов датасета будет использоваться для валидации модели.
 
 Пример:
 
-``` shell
+```shell
 python train.py --input_wavs_dir data/validation/origs --input_mels_dir mel_files/spliced --input_training_file data/training.txt --input_validation_file data/validation.txt --checkpoint_path cp_hifigan --config configs/config.json --training_epochs 3100 --stdout_interval 5 --checkpoint_interval 5000 --summary_interval 100 --validation_interval 1000 --fine_tuning True --training_data_percent 80
 ```
 
-Также некоторые параметры установлены по умолчанию, это можно посмотреть в самом [скрипте](./train.py).
+Некоторые параметры установлены по умолчанию, ознакомиться можно в самом [скрипте](./train.py).
 
-Обязательно, чтобы файлы mel-спектрограммы назывались так же, как и оригинальные аудиофайлы, то есть соответственно: orig0.npy -> orig0.wav. В приложении при создании mel-спектрограмм они назвываются в формате orig{number}.npy. Также обязательно, чтобы mel-спектрограммы имели расширеник .npy.
+Обязательно, чтобы файлы mel-спектрограммы назывались так же, как и оригинальные аудиофайлы, то есть соответственно: orig0.npy -> orig0.wav. В приложении при создании mel-спектрограмм они назвываются в формате orig{number}.npy. Также обязательно, чтобы mel-спектрограммы имели расширение .npy.
 
 ### Преобразование аудиофайлов в mel-спектрограммы
 
@@ -122,6 +129,6 @@ python train.py --input_wavs_dir data/validation/origs --input_mels_dir mel_file
 
 Пример:
 
-``` shell
+```shell
 python mel_spec.py --wavs_dir data/training/origs --save_dir mel_files/spliced
 ```

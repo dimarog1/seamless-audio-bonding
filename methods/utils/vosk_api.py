@@ -3,17 +3,19 @@ import wave
 
 import librosa
 import soundfile
+import os
 from vosk import KaldiRecognizer, Model
 
+VOSK_DATA = 'vosk_data' # путь к директории VOSK
+MODEL = 'vosk-model-en-us-0.22-lgraph'
 
 class RecognizerWrapper:
     chunk_size = 4000
     sample_rate = 22050
 
-    def __init__(self, model_directory: str, sr: int = 22050):
-        self.model_directory = model_directory
-        self.temporary_audio_path = 'vosk_data/tmp/tmp.wav'  # путь к временному файлу vosk
-        self.model = Model(model_directory)
+    def __init__(self, sr: int = 22050):
+        self.temporary_audio_path = os.path.join(VOSK_DATA, 'tmp', 'tmp.wav')
+        self.model = Model(os.path.join(VOSK_DATA, 'model', MODEL))
         self.sample_rate = sr
 
     def _process_sample(self):
