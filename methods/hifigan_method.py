@@ -64,21 +64,23 @@ def inference(audios_path: str, save_path: str, hifigan_model_path: str):
             write(output_file, 16000, audio)
 
 
-def hifigan(audios_path: str, save_path: str, hifigan_model_path: str):
-    config_file = os.path.join('cp_hifigan/config.json')
-    with open(config_file) as f:
-        data = f.read()
+def hifigan(audios_path: str, save_path: str, hifigan_model_path: str, config_file: str):
+    try:
+        with open(config_file) as f:
+            data = f.read()
 
-    global h
-    json_config = json.loads(data)
-    h = AttrDict(json_config)
+        global h
+        json_config = json.loads(data)
+        h = AttrDict(json_config)
 
-    torch.manual_seed(h.seed)
-    global device
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed(h.seed)
-        device = torch.device('cuda')
-    else:
-        device = torch.device('cpu')
+        torch.manual_seed(h.seed)
+        global device
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed(h.seed)
+            device = torch.device('cuda')
+        else:
+            device = torch.device('cpu')
+    except Exception:
+        raise RuntimeError('Incorrect config file path')
 
     inference(audios_path, save_path, hifigan_model_path)

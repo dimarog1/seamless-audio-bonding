@@ -15,6 +15,7 @@ def main():
     parser.add_argument('--hifivc_model_path', default='model.pt', type=str)
     parser.add_argument('--vosk_model_path', default='vosk_data', type=str)
     parser.add_argument('--hifigan_model_path', default='cp_hifigan/g_02700000', type=str)
+    parser.add_argument('--config', default='configs/config.json', type=str)
     
     a = parser.parse_args()
     
@@ -39,7 +40,7 @@ def main():
         exp_time(a.audios_path, a.save_path)
     elif a.method == 'hifigan':
         exp_time(a.audios_path, a.save_path)
-        hifigan(a.save_path, a.save_path, a.hifigan_model_path)
+        hifigan(a.save_path, a.save_path, a.hifigan_model_path, a.config)
 
 
 if __name__ == '__main__':

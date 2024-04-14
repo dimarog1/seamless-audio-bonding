@@ -83,11 +83,12 @@ pip install librosa==0.9.1
 * --hifivc_model_path - путь до модели [HIFI-VC](https://drive.google.com/file/d/1oFwMeuQtwaBEyOFkyG7c7LfBQiRe3RdW/view).
 * --vosk_model_path - путь до модели [Vosk](https://alphacephei.com/vosk/models).
 * --hifigan_model_path - путь до модели [HIFI-GAN](https://disk.yandex.ru/d/PWkFYPZL5pGBKA).
+* --config - путь до конфигурационного файла (используется при применении технологии [HIFI-GAN](https://github.com/jik876/hifi-gan.git)).
 
 Пример:
 
 ```shell
-python mix.py --method exp_time_fade --audios_path audios --save_path smoothed_audio --hifivc_model_path model.pt --vosk_model_path vosk_data --hifigan_model_path cp_hifigan/g_02700000
+python mix.py --method exp_time_fade --audios_path audios --save_path smoothed_audio --hifivc_model_path model.pt --vosk_model_path vosk_data --hifigan_model_path cp_hifigan/g_02700000 --config configs/config.json
 ```
 
 Некоторые параметры установлены по умолчанию, ознакомиться можно в самом [скрипте](./mix.py).
